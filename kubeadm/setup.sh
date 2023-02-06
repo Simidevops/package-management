@@ -20,7 +20,8 @@ Note: Open Required Ports In AWS Security Groups. For now we will open All trafi
 
 ==========COMMON FOR MASTER & SLAVES START ====
 
-1) Switch to root user
+1) sudo hostnamectl set-hostname master
+Switch to root user
    
 sudo su -
 
@@ -130,23 +131,26 @@ systemctl daemon-reload
 systemctl start kubelet 
 systemctl enable kubelet.service
 
+# jump to ====[In Master Node Start] #142==========
 
 ==========COMMON FOR MASTER & SLAVES END ====
 
-kubeadm join 10.0.0.6:6443 --token xmzufh.e0nu3kb5ohijfxyh \
-        --discovery-token-ca-cert-hash sha256:579b6a53bd00c8483f5150b9fb521b6431fc38b1ac716b8b9a5f668928a93771
+kubeadm join 172.31.89.15:6443 --token 62uyml.ggvuzi8oyuup4sex \
+        --discovery-token-ca-cert-hash sha256:48ea5958abb0888e6f9a8ec74ef7bd8565606c49f8fdc6fcfa39cbc2d8eda2cb
 
 	
 ===========In Master Node Start====================
 # Steps Only For Kubernetes Master
 
 # Switch to the root user.
-
+# Already a root user
 sudo su -
 
-# Initialize Kubernates master by executing below commond.
+# Initialize the control plane on a private IP -Initialize Kubernates master by executing below command.
 
 kubeadm init
+
+# When you initialized your cluster, it created a token that will be used in the WorkerNode (PASTE TOKEN):
 
 # If you want to initialize kubernetes on Public EndPoint(Not recommended in real time). You can use below option Replace PUBLIC_IP with actual public ip of your kubernetes master node (Recommended to use Elastic(Create and assign elastic IP to master node and use that Elastic IP below)).Replace PORT with 6443 (API Server Port). 
 
@@ -156,12 +160,18 @@ IF Error
 sudo kubeadm init --cri-socket /run/containerd/containerd.sock
 
 
-# Configure kubectl  exit as root user & exeucte as normal ubuntu user
+# Configure kubectl  exit as root user & execute as normal ubuntu user
 exit
+su - ubuntu
 
-mkdir -p $HOME/.kube
+COPY AND PASTE YOUR OWN FROM YOUR COMMAND LINE :mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+ls -a
+kubectl get all
+kubectl get node
+kubectl get pod -A
 
 
 # To verify, if kubectl is working or not, run the following command.
